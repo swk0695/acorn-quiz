@@ -22,18 +22,46 @@
       box-shadow: 0 12px 35px rgba(0,0,0,0.12);
       text-align: center;
     }
-    h1 { font-size: 1.2rem; margin-bottom: 4px; }
-    .meta { font-size: 0.7rem; color: #666; margin-bottom: 12px; }
-    .question { font-size: 1.1rem; margin-bottom: 14px; }
-    .options { display: flex; flex-direction: column; gap: 10px; }
-    .options button {
-      border: none; background: #4d7cff; color: #fff; border-radius: 999px;
-      padding: 10px 14px; font-size: 0.95rem; cursor: pointer;
+    h1 {
+      font-size: 1.2rem;
+      margin-bottom: 4px;
     }
-    .result { margin-top: 14px; font-weight: 600; }
+    .meta {
+      font-size: 0.7rem;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    .question {
+      font-size: 1.1rem;
+      margin-bottom: 14px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .options button {
+      border: none;
+      background: #4d7cff;
+      color: #fff;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 14px;
+      font-weight: 600;
+      min-height: 1.5rem;
+    }
     .back-btn {
-      margin-top: 16px; background: #ff9f2a; border: none; color: #fff;
-      border-radius: 999px; padding: 8px 16px; cursor: pointer;
+      margin-top: 16px;
+      background: #ff9f2a;
+      border: none;
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 16px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -48,39 +76,57 @@
   </div>
 
   <script>
+    // 1) URL 파라미터 읽기 (도토리 이름, 난이도)
     const params = new URLSearchParams(window.location.search);
     const acorn = params.get("acorn") || "acorn";
     const difficulty = params.get("difficulty") || "easy";
+
     document.getElementById("meta").textContent =
       `acorn: ${acorn} · difficulty: ${difficulty}`;
 
+    // 2) 난이도에 따라 문제 만들기
     function rand(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
+
     function makeQuestion(diff) {
       let a, b, text, answer;
+
       if (diff === "easy") {
-        a = rand(1, 9); b = rand(1, 9);
-        text = `${a} + ${b} = ?`; answer = a + b;
+        // 한 자리 덧셈
+        a = rand(1, 9);
+        b = rand(1, 9);
+        text = `${a} + ${b} = ?`;
+        answer = a + b;
       } else if (diff === "normal") {
+        // 두 자리 덧셈/뺄셈 섞기
         if (Math.random() < 0.5) {
-          a = rand(5, 30); b = rand(1, 20);
-          text = `${a} - ${b} = ?`; answer = a - b;
+          a = rand(5, 30);
+          b = rand(1, 20);
+          text = `${a} - ${b} = ?`;
+          answer = a - b;
         } else {
-          a = rand(5, 30); b = rand(5, 15);
-          text = `${a} + ${b} = ?`; answer = a + b;
+          a = rand(5, 30);
+          b = rand(5, 15);
+          text = `${a} + ${b} = ?`;
+          answer = a + b;
         }
       } else {
-        a = rand(2, 9); b = rand(2, 9);
-        text = `${a} × ${b} = ?`; answer = a * b;
+        // hard: 곱셈
+        a = rand(2, 9);
+        b = rand(2, 9);
+        text = `${a} × ${b} = ?`;
+        answer = a * b;
       }
 
+      // 보기 4개 만들기 (정답 + 비슷한 숫자)
       const options = [answer];
       while (options.length < 4) {
         let fake = answer + rand(-3, 3);
         if (fake < 0) fake = answer + 1;
         if (!options.includes(fake)) options.push(fake);
       }
+      // 섞기
       for (let i = options.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [options[i], options[j]] = [options[j], options[i]];
@@ -88,30 +134,7 @@
       return { text, answer, options };
     }
 
+    // 3) 페이지에 문제 뿌리기
     const q = makeQuestion(difficulty);
-    const qEl = document.getElementById("question");
-    const optEl = document.getElementById("options");
-    const resEl = document.getElementById("result");
-    const backBtn = document.getElementById("backBtn");
+    const qEl = document.g
 
-    qEl.textContent = q.text;
-    q.options.forEach(o => {
-      const btn = document.createElement("button");
-      btn.textContent = o;
-      btn.onclick = () => {
-        if (o === q.answer) {
-          resEl.textContent = "정답이야! 🎉";
-        } else {
-          resEl.textContent = "아쉽다! 다시 해보자 😅";
-        }
-        backBtn.style.display = "inline-block";
-      };
-      optEl.appendChild(btn);
-    });
-
-    backBtn.onclick = () => {
-      window.history.back();
-    };
-  </script>
-</body>
-</html>
