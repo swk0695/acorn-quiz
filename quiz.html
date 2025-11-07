@@ -27,10 +27,11 @@
     .question { font-size: 1.1rem; margin-bottom: 14px; }
     .options { display: flex; flex-direction: column; gap: 10px; }
     .options button {
-      border: none; background: #4d7cff; color: #fff; border-radius: 999px;
-      padding: 10px 14px; font-size: 0.95rem; cursor: pointer;
+      border: none; background: #4d7cff; color: #fff;
+      border-radius: 999px; padding: 10px 14px;
+      font-size: 0.95rem; cursor: pointer;
     }
-    .result { margin-top: 14px; font-weight: 600; }
+    .result { margin-top: 14px; font-weight: 600; min-height: 1.5rem; }
     .back-btn {
       margin-top: 16px; background: #ff9f2a; border: none; color: #fff;
       border-radius: 999px; padding: 8px 16px; cursor: pointer;
@@ -48,12 +49,14 @@
   </div>
 
   <script>
+    // 파라미터 받기
     const params = new URLSearchParams(window.location.search);
     const acorn = params.get("acorn") || "acorn";
     const difficulty = params.get("difficulty") || "easy";
     document.getElementById("meta").textContent =
       `acorn: ${acorn} · difficulty: ${difficulty}`;
 
+    // 문제 만들기
     function rand(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
@@ -81,6 +84,7 @@
         if (fake < 0) fake = answer + 1;
         if (!options.includes(fake)) options.push(fake);
       }
+      // 섞기
       for (let i = options.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [options[i], options[j]] = [options[j], options[i]];
@@ -88,6 +92,7 @@
       return { text, answer, options };
     }
 
+    // 화면에 뿌리기
     const q = makeQuestion(difficulty);
     const qEl = document.getElementById("question");
     const optEl = document.getElementById("options");
@@ -109,9 +114,23 @@
       optEl.appendChild(btn);
     });
 
+    // 돌아가기 버튼
     backBtn.onclick = () => {
-      window.history.back();
+      // 1) 뒤로 갈 곳 있으면 그걸로
+      if (window.history.length > 1) {
+        window.history.back();
+        return;
+      }
+
+      // 2) 새 탭으로 열렸으면 닫기 시도
+      window.close();
+
+      // 3) 그래도 안 되면 Onirix 뷰어로 강제 이동
+      // ↓↓↓ 이 부분을 너희 씬 공유 주소로 바꿔
+      window.location.href = "https://studio.onirix.com/projects/42880b6a2af24cd09a12aa1f5992d726/editor/scenes";
     };
   </script>
 </body>
 </html>
+
+
