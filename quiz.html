@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Acorn Math Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f3f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #fff;
+      width: min(95%, 400px);
+      border-radius: 20px;
+      padding: 20px 18px 18px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+      text-align: center;
+    }
+    h1 { font-size: 1.2rem; margin-bottom: 4px; }
+    .meta { font-size: 0.7rem; color: #666; margin-bottom: 12px; }
+    .question { font-size: 1.1rem; margin-bottom: 14px; }
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .options button {
+      border: none; background: #4d7cff; color: #fff; border-radius: 999px;
+      padding: 10px 14px; font-size: 0.95rem; cursor: pointer;
+    }
+    .result { margin-top: 14px; font-weight: 600; }
+    .back-btn {
+      margin-top: 16px; background: #ff9f2a; border: none; color: #fff;
+      border-radius: 999px; padding: 8px 16px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>도토리 수학 문제</h1>
+    <div class="meta" id="meta"></div>
+    <div class="question" id="question">문제를 불러오는 중...</div>
+    <div class="options" id="options"></div>
+    <div class="result" id="result"></div>
+    <button class="back-btn" id="backBtn" style="display:none;">Back to AR</button>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const acorn = params.get("acorn") || "acorn";
+    const difficulty = params.get("difficulty") || "easy";
+    document.getElementById("meta").textContent =
+      `acorn: ${acorn} · difficulty: ${difficulty}`;
+
+    function rand(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    function makeQuestion(diff) {
+      let a, b, text, answer;
+      if (diff === "easy") {
+        a = rand(1, 9); b = rand(1, 9);
+        text = `${a} + ${b} = ?`; answer = a + b;
+      } else if (diff === "normal") {
+        if (Math.random() < 0.5) {
+          a = rand(5, 30); b = rand(1, 20);
+          text = `${a} - ${b} = ?`; answer = a - b;
+        } else {
+          a = rand(5, 30); b = rand(5, 15);
+          text = `${a} + ${b} = ?`; answer = a + b;
+        }
+      } else {
+        a = rand(2, 9); b = rand(2, 9);
+        text = `${a} × ${b} = ?`; answer = a * b;
+      }
+
+      const options = [answer];
+      while (options.length < 4) {
+        let fake = answer + rand(-3, 3);
+        if (fake < 0) fake = answer + 1;
+        if (!options.includes(fake)) options.push(fake);
+      }
+      for (let i = options.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [options[i], options[j]] = [options[j], options[i]];
+      }
+      return { text, answer, options };
+    }
+
+    const q = makeQuestion(difficulty);
+    const qEl = document.getElementById("question");
+    const optEl = document.getElementById("options");
+    const resEl = document.getElementById("result");
+    const backBtn = document.getElementById("backBtn");
+
+    qEl.textContent = q.text;
+    q.options.forEach(o => {
+      const btn = document.createElement("button");
+      btn.textContent = o;
+      btn.onclick = () => {
+        if (o === q.answer) {
+          resEl.textContent = "정답이야! 🎉";
+        } else {
+          resEl.textContent = "아쉽다! 다시 해보자 😅";
+        }
+        backBtn.style.display = "inline-block";
+      };
+      optEl.appendChild(btn);
+    });
+
+    backBtn.onclick = () => {
+      window.history.back();
+    };
+  </script>
+</body>
+</html>
